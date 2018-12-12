@@ -51,7 +51,7 @@ class Hand:
 	def card_add(self, card):
 		self.cards.append(card)
 		
-		if card.rank == 'A'
+		if card.rank == 'A':
 			self.ace = True
 			
 		self.value += card_val[card.rank]
@@ -107,7 +107,7 @@ def make_bet():
 			bet = bet_comp
 			
 		else:
-			print("Aposta inválida. Você tem {} ficas sobrando").format(chip_pool)
+			print("Aposta inválida. Você tem " + str(chip_pool) + " fichas sobrando")
 			
 def deal_cards():
 	global result, playing, deck, player_hand, dealer_hand, chip_pool, bet
@@ -131,7 +131,111 @@ def deal_cards():
 	
 	game_step()
 	
+def hit():
+	global playing, chip_pool, deck, player_hand, dealer_hand, result, bet
+	
+	if playing:
+		if player_hand.calc_val() <= 21:
+			player_hand.card_add(deck.deal())
 		
+		print("Player hand is %s" %player_hand)
+		if player_hand.calc_val() > 21:
+			player_hand.card_add(deck.deal())
+		
+		print("Player hand is %s" %player_hand)
+		
+	else:
+		result = "Sorry, can't hit!" + restart_phrase
+		
+	game_step()
+	
+def stand():
+	global playing, chip_pool, deck, player_hand, dealer_hand, result, bet
+	
+	if not playing:
+		if player_hand.calc_val() > 0:
+			result = "Sorry, can't stand!"
+		
+	else:
+		while dealer_hand.calc_val() < 17:
+			dealer_hand.card_add(deck.deal())
+			
+		if dealer_hand.calc_val() > 21:
+			result = "Dealer busts! You win! " + restart_phrase
+			chip_pool += bet
+			playing = False
+			
+		elif dealer_hand.calc_val() < player_hand.calc_val():
+			result = "You bet the dealer! You win! " + restart_phrase
+			chip_pool += bet
+			playing = False
+			
+		elif dealer_hand.calc_val() == player_hand.calc_val():
+			result = "Tied! " + restart_phrase
+			playing = False
+			
+		else:
+			result = "Dealer wins! " + restart_phrase
+			chip_pool -= bet
+			playing = False
+		
+	game_step()
+	
+def game_step():
+	print("")
+	print("Player hand is:")
+	player_hand.draw(hidden = False)
+	print("Player hand total is: " + str(player_hand.calc_val()))
+	
+	print("")
+	print("Dealer hand is:")
+	dealer_hand.draw(hidden = False)
+	print("Dealer hand total is: " + str(dealer_hand.calc_val()))
+	
+	if not playing:
+		print("Chip total: " + str(chip_pool))
+		
+	print(result)
+	
+	player_input()
+	
+def game_exit():
+	print("Thanks for playing!")
+	exit()
+	
+def player_input():
+	plin = input().lower()
+	
+	if plin == 'h':
+		hit()
+		
+	elif plin == 's':
+		stand()
+		
+	elif plin == 'd':
+		deal_cards()
+		
+	elif plin == 'q':
+		game_exit()
+		
+	else:
+		print("Invalid input... \nEnter h, s, d oq q: ")
+		player_input()
+		
+def intro(): 
+	statement = '''Welcome to BlackJack! Get as close to 21 as you can without going over!
+    Dealer hits until she reaches 17. Aces count as 1 or 11.
+    Card output goes a letter followed by a number of face notation'''
+	print(statement)
+	
+deck = Deck()
+deck.shuffle()
+
+player_hand = Hand()
+dealer_hand = Hand()
+
+intro()
+deal_cards()
 		
 		
 		
